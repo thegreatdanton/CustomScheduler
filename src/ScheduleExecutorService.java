@@ -85,7 +85,18 @@ public class ScheduleExecutorService {
      * initialDelay+period, then initialDelay + 2 * period, and so on.
      */
     public void scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit){
-
+        lock.lock();
+        try{
+            long scheduledTime = System.currentTimeMillis() + unit.toMillis(initialDelay);
+            ScheduledTask task = new ScheduledTask(command, scheduledTime, 2, period, null, unit);
+            taskQueue.add(task);
+            newTaskAdded.signalAll();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            lock.unlock();
+        }
     }
 
     /*
@@ -93,7 +104,18 @@ public class ScheduleExecutorService {
      * subsequently with the given delay between the termination of one execution and the commencement of the next.
      */
     public void scheduleAtFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit){
-
+        lock.lock();
+        try{
+            long scheduledTime = System.currentTimeMillis() + unit.toMillis(initialDelay);
+            ScheduledTask task = new ScheduledTask(command, scheduledTime, 3, null, delay, unit);
+            taskQueue.add(task);
+            newTaskAdded.signalAll();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            lock.unlock();
+        }
     }
 }
 
