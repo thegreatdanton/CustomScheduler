@@ -1,3 +1,5 @@
+package CustomScheduler;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +36,7 @@ public class CustomScheduler {
     }
 
     public static void main(String[] args) {
-        System.out.println("starting at"+System.currentTimeMillis()/1000);
+        System.out.println("starting at "+System.currentTimeMillis()/1000);
         CustomScheduler service = new CustomScheduler();
 
         Runnable task1 = getRunnableTask("Task1");
