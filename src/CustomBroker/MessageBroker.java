@@ -34,7 +34,7 @@ public class MessageBroker {
     public void publish(@NonNull final Topic topic, @NonNull final Message message){
         topic.addMessage(message);
         System.out.println(message.getMessage() + " published to topic: " + topic.getTopicName());
-        new Thread(() -> topicHandlerMap.get(topic.getTopicId())).start();
+        new Thread(() -> topicHandlerMap.get(topic.getTopicId()).publish()).start();
     }
 
     public void resetOffset(@NonNull final Topic topic, @NonNull final ISubscriber subscriber, @NonNull final Integer newOffset){
