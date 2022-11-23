@@ -1,6 +1,5 @@
 package CustomDatabase.Models;
 
-import javafx.scene.control.Tab;
 import lombok.Getter;
 
 import java.util.Date;
