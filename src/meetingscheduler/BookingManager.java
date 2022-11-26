@@ -12,44 +12,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class BookingManager implements Runnable{
+public class BookingManager implements Runnable {
     private RoomManager roomManager;
     private BookingByTime bookingByTime;
 
-    private Map<String, List<Meeting>> bookings;
+    private ConcurrentMap<String, List<Meeting>> bookings;
 
-    public BookingManager(RoomManager roomManager, BookingByTime bookingByTime, Map<String, List<Meeting>> bookings) {
+    public BookingManager(RoomManager roomManager, BookingByTime bookingByTime, ConcurrentMap<String, List<Meeting>> bookings) {
         this.roomManager = roomManager;
         this.bookingByTime = bookingByTime;
         this.bookings = bookings;
     }
 
-    public Meeting bookRoom(long startTime, long endTime){
+    public synchronized Meeting bookRoom(long startTime, long endTime) {
         Meeting meeting = null;
-        System.out.println("Start time: " + startTime +"   End time: " + endTime);
-        if(startTime >= endTime){
+        System.out.println("Start time: " + Instant.ofEpochMilli(startTime).toString() + "   End time: " + Instant.ofEpochMilli(endTime).toString());
+        if (startTime >= endTime) {
             System.out.println("Bad Request");
+            return null;
         }
 
         List<Room> rooms = roomManager.getRooms();
-        synchronized (rooms){
-            for(Room room :rooms){
-                List<Meeting> meetings = bookings.getOrDefault(room.getId(), new ArrayList<>());
-                meeting = bookingByTime.book(startTime, endTime, room, meetings);
-                if(meeting != null){
-                    if(!bookings.containsKey(meeting.getRoom().getId())){
-                        bookings.put(meeting.getRoom().getId(), new ArrayList<>());
-                    }
-                    bookings.get(meeting.getRoom().getId()).add(meeting);
-                    System.out.println("Meeting room booked, room: " + room.getId());
-                    break;
+        for (Room room : rooms) {
+            List<Meeting> meetings = bookings.getOrDefault(room.getId(), new ArrayList<>());
+            meeting = bookingByTime.book(startTime, endTime, room, meetings);
+            if (meeting != null) {
+                if (!bookings.containsKey(meeting.getRoom().getId())) {
+                    bookings.put(meeting.getRoom().getId(), new ArrayList<>());
                 }
+                bookings.get(meeting.getRoom().getId()).add(meeting);
+                System.out.println("Meeting room booked, room: " + room.getId() + " meeting Id: " + meeting.getId());
+                break;
             }
         }
 
         if (meeting == null) {
-           System.out.println("No room is available for the given time");
+            System.out.println("No room is available for the given time");
         }
         return meeting;
     }
@@ -63,19 +64,16 @@ public class BookingManager implements Runnable{
     public void run() {
         Random random = new Random();
         Instant instant = Instant.now();
-        System.out.println(instant.toEpochMilli());
-        for(int i=0; i<100; i++){
+        for (int i = 0; i < 100; i++) {
             Instant instant1 = instant.plus(random.nextInt(10), ChronoUnit.HOURS);
             long startTime = instant1.toEpochMilli();
-            System.out.println(startTime);
             long endTime = instant1.plus(random.nextInt(60), ChronoUnit.MINUTES).toEpochMilli();
-            System.out.println(endTime);
             bookRoom(startTime, endTime);
-            /*try {
+            try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
-            }*/
+            }
         }
     }
 }
