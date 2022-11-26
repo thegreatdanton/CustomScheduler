@@ -1,5 +1,6 @@
 package algo;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,12 +52,20 @@ public class CounterByTime implements Runnable {
 
     public int getCount(String key, long timestamp) {
         if (map.containsKey(key)) {
+            int index = 0;
+            long temp = Long.MIN_VALUE;
             Node node = map.get(key);
             for (int i = 0; i < node.hits.length; i++) {
                 if (node.timeStamps[i] != 0 && timestamp >= node.timeStamps[i]) {
-                    System.out.println("count for " + key + " at timestamp " + timestamp + " is " + node.hits[i]);
-                    return node.hits[i];
+                    if(temp <= timeStamps[i]){
+                        index = i;
+                        temp = timeStamps[i];
+                    }
                 }
+            }
+            if(temp != Long.MIN_VALUE){
+                System.out.println("count for " + key + " at timestamp " + timestamp + " is " + node.hits[index]);
+                return node.hits[index];
             }
         }
         System.out.println("count for " + key + " at timestamp " + timestamp + " is " + 0);
@@ -64,11 +73,19 @@ public class CounterByTime implements Runnable {
     }
 
     public int getAllCount(long timestamp) {
+        int index = 0;
+        long temp = Long.MIN_VALUE;
         for (int i = 0; i < hits.length; i++) {
             if (timeStamps[i] != 0 && timestamp >= timeStamps[i]) {
-                System.out.println("total count at timestamp " + timestamp + " is " + hits[i]);
-                return hits[i];
+                if(temp <= timeStamps[i]){
+                    index = i;
+                    temp = timeStamps[i];
+                }
             }
+        }
+        if(temp != Long.MIN_VALUE){
+            System.out.println("total count at timestamp " + timestamp + " is " + hits[index]);
+            return hits[index];
         }
         System.out.println("total count at timestamp " + timestamp + " is " + 0);
         return 0;

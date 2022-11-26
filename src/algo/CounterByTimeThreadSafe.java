@@ -1,5 +1,6 @@
 package algo;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
@@ -71,9 +72,9 @@ public class CounterByTimeThreadSafe implements Runnable{
         long temp = Long.MIN_VALUE;
         for (int i = 0; i < hits.length; i++) {
             if (timeStamps[i] != 0 && timestamp >= timeStamps[i]) {
-                temp = Math.max(temp, timeStamps[i]);
-                if(temp != Long.MIN_VALUE){
+                if(temp <= timeStamps[i]){
                     index = i;
+                    temp = timeStamps[i];
                 }
             }
         }
