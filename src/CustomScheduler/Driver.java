@@ -11,9 +11,10 @@ public class Driver {
         Runnable task2 = getRunnableTask("Task2");
        // scheduleExecutorService.scheduleAtFixedRate(task2, 1,2, TimeUnit.SECONDS);
         Runnable task3 = getRunnableTask("Task3");
-        //scheduleExecutorService.scheduleAtFixedDelay(task3, 1, 2, TimeUnit.SECONDS);
+        scheduleExecutorService.scheduleAtFixedDelay(task3, 1, 2, TimeUnit.SECONDS);
         Runnable task4 = getRunnableTask("Task4");
         scheduleExecutorService.scheduleAtFixedRate(task4, 1, 4, TimeUnit.SECONDS);
+
         scheduleExecutorService.start();
     }
 

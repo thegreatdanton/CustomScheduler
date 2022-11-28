@@ -20,6 +20,7 @@ public class BookingManager implements Runnable {
     private BookingByTime bookingByTime;
 
     private ConcurrentMap<String, List<Meeting>> bookings;
+    private Object lock = new Object();
 
     public BookingManager(RoomManager roomManager, BookingByTime bookingByTime, ConcurrentMap<String, List<Meeting>> bookings) {
         this.roomManager = roomManager;
@@ -27,7 +28,7 @@ public class BookingManager implements Runnable {
         this.bookings = bookings;
     }
 
-    public synchronized Meeting bookRoom(long startTime, long endTime) {
+    public Meeting bookRoom(long startTime, long endTime) {
         Meeting meeting = null;
         System.out.println("Start time: " + Instant.ofEpochMilli(startTime).toString() + "   End time: " + Instant.ofEpochMilli(endTime).toString());
         if (startTime >= endTime) {
@@ -35,17 +36,19 @@ public class BookingManager implements Runnable {
             return null;
         }
 
-        List<Room> rooms = roomManager.getRooms();
-        for (Room room : rooms) {
-            List<Meeting> meetings = bookings.getOrDefault(room.getId(), new ArrayList<>());
-            meeting = bookingByTime.book(startTime, endTime, room, meetings);
-            if (meeting != null) {
-                if (!bookings.containsKey(meeting.getRoom().getId())) {
-                    bookings.put(meeting.getRoom().getId(), new ArrayList<>());
+        synchronized (lock){
+            List<Room> rooms = roomManager.getRooms();
+            for (Room room : rooms) {
+                List<Meeting> meetings = bookings.getOrDefault(room.getId(), new ArrayList<>());
+                meeting = bookingByTime.book(startTime, endTime, room, meetings);
+                if (meeting != null) {
+                    if (!bookings.containsKey(meeting.getRoom().getId())) {
+                        bookings.put(meeting.getRoom().getId(), new ArrayList<>());
+                    }
+                    bookings.get(meeting.getRoom().getId()).add(meeting);
+                    System.out.println("Meeting room booked, room: " + room.getId() + " meeting Id: " + meeting.getId());
+                    break;
                 }
-                bookings.get(meeting.getRoom().getId()).add(meeting);
-                System.out.println("Meeting room booked, room: " + room.getId() + " meeting Id: " + meeting.getId());
-                break;
             }
         }
 
